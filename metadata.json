@@ -1,0 +1,5 @@
+{
+  "name": "当番医検索 (Emergency Doctor Finder)",
+  "description": "Select a prefecture to find today's emergency on-duty doctors in Japan using AI-powered search.",
+  "requestFramePermissions": []
+}
