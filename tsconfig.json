@@ -27,7 +27,6 @@
     "noEmit": true
   },
   "exclude": [
-    "node_modules",
-    "itsumo-chigau"
+    "node_modules"
   ]
 }
