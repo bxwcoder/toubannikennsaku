@@ -5,7 +5,7 @@ import { getItemInfo, sortItems } from '../lib/status';
 import { navigate } from '../lib/router';
 import { Header } from '../components/Header';
 import { ItemRow } from '../components/ItemRow';
-import { IconCalendar, IconClose, IconPlus, IconSettings } from '../components/Icons';
+import { IconClose, IconPlus, IconSettings } from '../components/Icons';
 
 interface Props {
   items: Item[];
@@ -13,7 +13,6 @@ interface Props {
   sortKey: SortKey;
   onSortChange: (key: SortKey) => void;
   onDoneToday: (id: string) => void;
-  onLoadSample: () => void;
 }
 
 const HINT_KEY = 'last-done:hint-closed:v1';
@@ -32,7 +31,7 @@ const SUMMARY: { status: Status; label: string }[] = [
   { status: 'ok', label: '余裕あり' },
 ];
 
-export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday, onLoadSample }: Props) {
+export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday }: Props) {
   const [flashId, setFlashId] = useState<string | null>(null);
   const [hintClosed, setHintClosed] = useState(readHintClosed);
 
@@ -58,44 +57,6 @@ export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday, o
       <span>設定</span>
     </button>
   );
-
-  if (items.length === 0) {
-    return (
-      <>
-        <Header title="最後にやった日" right={settingsButton} />
-        <main className="screen">
-          <div className="empty">
-            <div className="empty-icon">
-              <IconCalendar width={40} height={40} />
-            </div>
-            <h2 className="empty-title">「前にいつやったっけ？」を記録しよう</h2>
-            <ol className="empty-steps">
-              <li>
-                <span className="step-num">1</span>
-                <span>排水口の掃除やシーツの交換など、忘れがちなことを登録</span>
-              </li>
-              <li>
-                <span className="step-num">2</span>
-                <span>やった日に「やった」ボタンを押すだけ</span>
-              </li>
-              <li>
-                <span className="step-num">3</span>
-                <span>何日たったか、そろそろやる時期かがひと目で分かる</span>
-              </li>
-            </ol>
-            <button type="button" className="btn btn--primary btn--large btn--block" onClick={() => navigate({ name: 'new' })}>
-              <IconPlus />
-              <span>最初の項目を登録する</span>
-            </button>
-            <button type="button" className="btn btn--secondary btn--block" onClick={onLoadSample}>
-              お試し用の見本を入れてみる
-            </button>
-            <p className="empty-note">見本はあとから1つずつ削除できます。</p>
-          </div>
-        </main>
-      </>
-    );
-  }
 
   const counts = { over: 0, soon: 0, ok: 0, none: 0 } as Record<Status, number>;
   for (const it of items) counts[getItemInfo(it, today).status]++;

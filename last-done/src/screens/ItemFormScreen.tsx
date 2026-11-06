@@ -5,7 +5,9 @@ import { useState, type FormEvent } from 'react';
 import { CATEGORIES, type Category, type Item } from '../types';
 import { TEMPLATES, type Template } from '../lib/templates';
 import { addDays, formatLong, isValidDateString } from '../lib/date';
+import { WHEN_FULL } from '../lib/when';
 import { Header } from '../components/Header';
+import { Sheet } from '../components/Sheet';
 import { IconChevron, IconPencil } from '../components/Icons';
 
 export interface ItemFormValues {
@@ -21,6 +23,8 @@ interface Props {
   today: string;
   onSubmit: (values: ItemFormValues) => void;
   onBack: () => void;
+  /** すでに登録してある項目名（一覧に「登録済み」と出すため） */
+  existingNames?: string[];
 }
 
 const NAME_MAX = 40;
@@ -48,7 +52,7 @@ interface Errors {
   interval?: string;
 }
 
-export function ItemFormScreen({ initial, today, onSubmit, onBack }: Props) {
+export function ItemFormScreen({ initial, today, onSubmit, onBack, existingNames = [] }: Props) {
   const isEdit = !!initial;
   const yesterday = addDays(today, -1);
 
@@ -65,6 +69,8 @@ export function ItemFormScreen({ initial, today, onSubmit, onBack }: Props) {
   );
   const [useCustom, setUseCustom] = useState(customInterval !== '');
   const [errors, setErrors] = useState<Errors>({});
+  /** テンプレートを押したときに出す「前回はいつ？」の小窓 */
+  const [quick, setQuick] = useState<Template | null>(null);
 
   const startWith = (t: Template | null) => {
     if (t) {
@@ -134,16 +140,19 @@ export function ItemFormScreen({ initial, today, onSubmit, onBack }: Props) {
             <IconChevron className="choose-chevron" />
           </button>
 
-          <h3 className="list-heading">よく使う項目から選ぶ</h3>
+          <h3 className="list-heading">よく使う項目（タップするだけで追加できます）</h3>
           {CATEGORIES.filter((c) => TEMPLATES.some((t) => t.category === c)).map((c) => (
             <section key={c} className="tpl-group">
               <h4 className="tpl-group-title">{c}</h4>
               <ul className="tpl-list">
                 {TEMPLATES.filter((t) => t.category === c).map((t) => (
                   <li key={t.name}>
-                    <button type="button" className="tpl-item" onClick={() => startWith(t)}>
-                      <span className="tpl-name">{t.name}</span>
-                      <span className="tpl-interval">目安 {intervalText(t.intervalDays)}</span>
+                    <button type="button" className="tpl-item" onClick={() => setQuick(t)}>
+                      <span className="tpl-name">
+                        {t.name}
+                        {existingNames.includes(t.name) ? <span className="tpl-registered">登録済み</span> : null}
+                      </span>
+                      <span className="tpl-interval">{intervalText(t.intervalDays)}</span>
                       <IconChevron className="choose-chevron" />
                     </button>
                   </li>
@@ -152,6 +161,41 @@ export function ItemFormScreen({ initial, today, onSubmit, onBack }: Props) {
             </section>
           ))}
         </main>
+
+        {quick ? (
+          <Sheet title={`「${quick.name}」を前回やったのはいつ？`} onClose={() => setQuick(null)}>
+            <div className="sheet-options">
+              {WHEN_FULL.map((o) => (
+                <button
+                  key={o.label}
+                  type="button"
+                  className="sheet-option"
+                  onClick={() =>
+                    onSubmit({
+                      name: quick.name,
+                      category: quick.category,
+                      lastDate: addDays(today, -o.daysAgo),
+                      intervalDays: quick.intervalDays,
+                    })
+                  }
+                >
+                  {o.label}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="link-btn sheet-more"
+              onClick={() => {
+                const t = quick;
+                setQuick(null);
+                startWith(t);
+              }}
+            >
+              日付や間隔を自分で決める
+            </button>
+          </Sheet>
+        ) : null}
       </>
     );
   }

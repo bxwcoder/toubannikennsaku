@@ -9,6 +9,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { ItemFormScreen, type ItemFormValues } from './screens/ItemFormScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
+import { WelcomeScreen } from './screens/WelcomeScreen';
 import { Toast, type ToastData } from './components/Toast';
 
 /** 日付が変わったら（夜中の0時をまたいだら）「今日」を更新する */
@@ -85,6 +86,13 @@ export default function App() {
     goBack({ name: 'home' });
   };
 
+  /** はじめての画面で選んだ項目をまとめて登録する */
+  const addMany = (list: ItemFormValues[]) => {
+    const now = new Date().toISOString();
+    setItems((prev) => [...prev, ...list.map((v) => ({ id: newId(), createdAt: now, ...v }))]);
+    showToast(`${list.length}件を登録しました`);
+  };
+
   const loadSample = () => {
     const now = new Date().toISOString();
     setItems(
@@ -110,16 +118,18 @@ export default function App() {
 
   switch (route.name) {
     case 'home':
-      screen = (
-        <HomeScreen
-          items={items}
-          today={today}
-          sortKey={sortKey}
-          onSortChange={changeSort}
-          onDoneToday={doneTodayQuick}
-          onLoadSample={loadSample}
-        />
-      );
+      screen =
+        items.length === 0 ? (
+          <WelcomeScreen today={today} onComplete={addMany} onLoadSample={loadSample} />
+        ) : (
+          <HomeScreen
+            items={items}
+            today={today}
+            sortKey={sortKey}
+            onSortChange={changeSort}
+            onDoneToday={doneTodayQuick}
+          />
+        );
       break;
     case 'settings':
       screen = (
@@ -133,7 +143,14 @@ export default function App() {
       );
       break;
     case 'new':
-      screen = <ItemFormScreen today={today} onSubmit={addItem} onBack={() => goBack({ name: 'home' })} />;
+      screen = (
+        <ItemFormScreen
+          today={today}
+          onSubmit={addItem}
+          onBack={() => goBack({ name: 'home' })}
+          existingNames={items.map((it) => it.name)}
+        />
+      );
       break;
     case 'detail':
     case 'edit': {
