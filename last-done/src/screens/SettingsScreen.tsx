@@ -4,7 +4,7 @@ import type { Item } from '../types';
 import { exportItems, parseBackup } from '../lib/storage';
 import { Header } from '../components/Header';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { IconChevron, IconDownload, IconInfo, IconUpload } from '../components/Icons';
+import { IconChevron, IconDownload, IconInfo, IconRestart, IconUpload } from '../components/Icons';
 
 interface Props {
   items: Item[];
@@ -12,15 +12,17 @@ interface Props {
   onImport: (items: Item[]) => void;
   onMessage: (message: string) => void;
   onBack: () => void;
+  onReset: () => void;
 }
 
-export const APP_VERSION = '0.1.0（画面見本）';
+export const APP_VERSION = '0.3（画面見本）';
 
-export function SettingsScreen({ items, today, onImport, onMessage, onBack }: Props) {
+export function SettingsScreen({ items, today, onImport, onMessage, onBack, onReset }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Item[] | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [showAbout, setShowAbout] = useState(false);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const handleExport = async () => {
     if (items.length === 0) {
@@ -88,6 +90,20 @@ export function SettingsScreen({ items, today, onImport, onMessage, onBack }: Pr
           </p>
         ) : null}
 
+        <h2 className="section-title section-title--list">やり直す</h2>
+        <ul className="menu">
+          <li>
+            <button type="button" className="menu-item" onClick={() => setConfirmReset(true)}>
+              <IconRestart />
+              <span className="menu-text">
+                <span className="menu-label">最初からやり直す</span>
+                <span className="menu-help">登録した項目をすべて消して、はじめの画面に戻ります</span>
+              </span>
+              <IconChevron className="menu-chevron" />
+            </button>
+          </li>
+        </ul>
+
         <h2 className="section-title section-title--list">このアプリ</h2>
         <ul className="menu">
           <li>
@@ -100,6 +116,7 @@ export function SettingsScreen({ items, today, onImport, onMessage, onBack }: Pr
               <IconInfo />
               <span className="menu-text">
                 <span className="menu-label">アプリについて</span>
+                <span className="menu-help">バージョン {APP_VERSION}</span>
               </span>
               <IconChevron className={showAbout ? 'menu-chevron menu-chevron--open' : 'menu-chevron'} />
             </button>
@@ -122,6 +139,20 @@ export function SettingsScreen({ items, today, onImport, onMessage, onBack }: Pr
           </li>
         </ul>
       </main>
+
+      {confirmReset ? (
+        <ConfirmDialog
+          title="最初からやり直しますか？"
+          message={`登録した${items.length}件の項目をすべて消して、はじめの画面に戻ります。消した項目は元に戻せません。`}
+          confirmLabel="すべて消す"
+          danger
+          onCancel={() => setConfirmReset(false)}
+          onConfirm={() => {
+            setConfirmReset(false);
+            onReset();
+          }}
+        />
+      ) : null}
 
       {pending ? (
         <ConfirmDialog

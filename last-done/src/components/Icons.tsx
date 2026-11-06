@@ -97,3 +97,10 @@ export const IconPencil = (p: SVGProps<SVGSVGElement>) => (
     <path d="m13.5 6.5 4 4" />
   </Svg>
 );
+
+export const IconRestart = (p: SVGProps<SVGSVGElement>) => (
+  <Svg {...p}>
+    <path d="M4 12a8 8 0 1 0 2.4-5.7" />
+    <path d="M4 4v4.5h4.5" />
+  </Svg>
+);

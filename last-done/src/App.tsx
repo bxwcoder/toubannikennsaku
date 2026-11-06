@@ -139,6 +139,16 @@ export default function App() {
           onImport={importItems}
           onMessage={showToast}
           onBack={() => goBack({ name: 'home' })}
+          onReset={() => {
+            setItems([]);
+            try {
+              localStorage.removeItem('last-done:hint-closed:v1');
+            } catch {
+              // 消せなくても困らない
+            }
+            replaceRoute({ name: 'home' });
+            showToast('すべて消しました');
+          }}
         />
       );
       break;
