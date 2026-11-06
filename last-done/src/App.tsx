@@ -1,7 +1,8 @@
 // アプリ全体のまとめ役。データを持ち、どの画面を表示するか決める
 import { useCallback, useEffect, useState, type ReactElement } from 'react';
 import type { Item, SortKey } from './types';
-import { todayString } from './lib/date';
+import { addDays, todayString } from './lib/date';
+import { SAMPLE_ITEMS } from './lib/templates';
 import { loadItems, loadSort, newId, saveItems, saveSort } from './lib/storage';
 import { goBack, replaceRoute, useRoute } from './lib/router';
 import { HomeScreen } from './screens/HomeScreen';
@@ -85,6 +86,21 @@ export default function App() {
     goBack({ name: 'home' });
   };
 
+  const loadSample = () => {
+    const now = new Date().toISOString();
+    setItems(
+      SAMPLE_ITEMS.map((s) => ({
+        id: newId(),
+        name: s.name,
+        category: s.category,
+        lastDate: addDays(today, -s.daysAgo),
+        intervalDays: s.intervalDays,
+        createdAt: now,
+      })),
+    );
+    showToast('見本を入れました');
+  };
+
   const importItems = (imported: Item[]) => {
     setItems(imported);
     showToast(`${imported.length}件の項目を読み込みました`);
@@ -104,6 +120,7 @@ export default function App() {
           sortKey={sortKey}
           onSortChange={changeSort}
           onDoneToday={doneTodayQuick}
+          onLoadSample={loadSample}
         />
       );
       break;

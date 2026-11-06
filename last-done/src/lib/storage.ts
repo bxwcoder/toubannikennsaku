@@ -2,6 +2,7 @@
 // 保存先はブラウザ内の保存領域（localStorage）。画面を閉じても残る
 import { CATEGORIES, type Category, type Item, type SortKey, SORT_LABELS } from '../types';
 import { isValidDateString } from './date';
+import { IS_ARTIFACT } from './env';
 
 const ITEMS_KEY = 'last-done:items:v1';
 const SORT_KEY = 'last-done:sort:v1';
@@ -77,23 +78,51 @@ function normalizeItem(value: unknown): Item | null {
   };
 }
 
-/** 書き出し: バックアップ用のファイルをダウンロードする */
-export function exportItems(items: Item[], today: string): void {
+/** 書き出しの結果 */
+export type ExportResult = 'saved' | 'declined' | 'failed';
+
+interface DownloadsApi {
+  save(req: { filename: string; data: string }): Promise<unknown>;
+}
+interface ClaudeRuntime {
+  use(name: 'downloads'): Promise<DownloadsApi | null>;
+}
+
+/** 書き出し: バックアップ用のファイルを保存する */
+export async function exportItems(items: Item[], today: string): Promise<ExportResult> {
   const data = {
     app: APP_ID,
     version: DATA_VERSION,
     exportedAt: new Date().toISOString(),
     items,
   };
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const text = JSON.stringify(data, null, 2);
+  const filename = `last-done-backup-${today}.json`;
+
+  if (IS_ARTIFACT) {
+    // claude.ai のページでは、ページが直接ファイルを保存できないので、保存の確認画面を出してもらう
+    try {
+      const claude = (window as unknown as { claude?: ClaudeRuntime }).claude;
+      const downloads = claude ? await claude.use('downloads') : null;
+      if (!downloads) return 'failed';
+      await downloads.save({ filename, data: text });
+      return 'saved';
+    } catch (err) {
+      const code = (err as { code?: string } | null)?.code;
+      return code === 'declined' ? 'declined' : 'failed';
+    }
+  }
+
+  const blob = new Blob([text], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `last-done-backup-${today}.json`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  return 'saved';
 }
 
 /** 読み込み: ファイルの中身を点検して項目の一覧に変える。おかしなファイルならエラーにする */

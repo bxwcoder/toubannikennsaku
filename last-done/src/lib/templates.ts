@@ -21,3 +21,12 @@ export const TEMPLATES: Template[] = [
   { name: '洗車', category: '車・バイク', intervalDays: 30 },
   { name: 'エンジンオイル交換', category: '車・バイク', intervalDays: 180 },
 ];
+
+/** お試し用の見本（今日を基準に、いろいろな状態がそろうようにしてある） */
+export const SAMPLE_ITEMS: { name: string; category: Category; daysAgo: number; intervalDays: number | null }[] = [
+  { name: '排水口の掃除', category: '家事・掃除', daysAgo: 10, intervalDays: 7 },
+  { name: 'シーツの交換', category: '家事・掃除', daysAgo: 5, intervalDays: 7 },
+  { name: '歯ブラシの交換', category: '消耗品交換', daysAgo: 12, intervalDays: 30 },
+  { name: '洗車', category: '車・バイク', daysAgo: 28, intervalDays: 30 },
+  { name: '美容院', category: '美容・健康', daysAgo: 40, intervalDays: null },
+];

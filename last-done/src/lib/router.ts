@@ -1,6 +1,8 @@
 // 画面の切り替え（どの画面を表示するか）を管理するファイル
-// URLの「#」より後ろで画面を表す。スマホの「戻る」ボタンでも前の画面に戻れる
+// 通常版: URLの「#」より後ろで画面を表す。スマホの「戻る」ボタンでも前の画面に戻れる
+// claude.ai のページ版: URLを使えないので、アプリの中だけで画面の履歴を覚える
 import { useEffect, useState } from 'react';
+import { IS_ARTIFACT } from './env';
 
 export type Route =
   | { name: 'home' }
@@ -42,13 +44,31 @@ function currentDepth(): number {
   return typeof state?.depth === 'number' ? state.depth : 0;
 }
 
+// ===== claude.ai のページ版で使う、アプリ内だけの画面履歴 =====
+let memoryStack: Route[] = [{ name: 'home' }];
+const listeners = new Set<() => void>();
+function emitMemory() {
+  listeners.forEach((fn) => fn());
+  window.scrollTo(0, 0);
+}
+
 export function navigate(route: Route): void {
+  if (IS_ARTIFACT) {
+    memoryStack = [...memoryStack, route];
+    emitMemory();
+    return;
+  }
   window.history.pushState({ depth: currentDepth() + 1 }, '', `#${routePath(route)}`);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 /** 前の画面へ戻る。アプリ内に戻り先がなければ fallback の画面にする */
 export function goBack(fallback: Route): void {
+  if (IS_ARTIFACT) {
+    memoryStack = memoryStack.length > 1 ? memoryStack.slice(0, -1) : [fallback];
+    emitMemory();
+    return;
+  }
   if (currentDepth() > 0) {
     window.history.back();
   } else {
@@ -57,14 +77,28 @@ export function goBack(fallback: Route): void {
 }
 
 export function replaceRoute(route: Route): void {
+  if (IS_ARTIFACT) {
+    memoryStack = [...memoryStack.slice(0, -1), route];
+    emitMemory();
+    return;
+  }
   window.history.replaceState({ depth: currentDepth() }, '', `#${routePath(route)}`);
   window.dispatchEvent(new PopStateEvent('popstate'));
 }
 
 export function useRoute(): Route {
-  const [route, setRoute] = useState<Route>(() => parseRoute(window.location.hash));
+  const [route, setRoute] = useState<Route>(() =>
+    IS_ARTIFACT ? memoryStack[memoryStack.length - 1] : parseRoute(window.location.hash),
+  );
 
   useEffect(() => {
+    if (IS_ARTIFACT) {
+      const onChange = () => setRoute(memoryStack[memoryStack.length - 1]);
+      listeners.add(onChange);
+      return () => {
+        listeners.delete(onChange);
+      };
+    }
     if (window.history.state == null) {
       window.history.replaceState({ depth: 0 }, '', window.location.href);
     }

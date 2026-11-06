@@ -13,9 +13,10 @@ interface Props {
   sortKey: SortKey;
   onSortChange: (key: SortKey) => void;
   onDoneToday: (id: string) => void;
+  onLoadSample: () => void;
 }
 
-export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday }: Props) {
+export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday, onLoadSample }: Props) {
   const sorted = useMemo(() => sortItems(items, sortKey, today), [items, sortKey, today]);
 
   if (items.length === 0) {
@@ -39,6 +40,10 @@ export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday }:
               <IconPlus />
               <span>最初の項目を登録する</span>
             </button>
+            <button type="button" className="btn btn--secondary empty-sample" onClick={onLoadSample}>
+              お試し用の見本を入れてみる
+            </button>
+            <p className="empty-note">見本はあとから1つずつ削除できます。</p>
           </div>
         </main>
       </>

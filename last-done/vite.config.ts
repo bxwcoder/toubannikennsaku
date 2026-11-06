@@ -1,13 +1,22 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// base: './' … どの場所に置いても画面が開けるようにする設定（GitHub Pages用）
-// outDir: '../docs' … 完成品を、リポジトリ直下の docs フォルダに出力する
-export default defineConfig({
+// 通常: リポジトリ直下の docs フォルダに出力（GitHub Pages 用）
+// artifact: claude.ai のページ用に、1つのファイルにまとめる下準備をして dist-artifact に出力
+export default defineConfig(({ mode }) => ({
   base: './',
   plugins: [react()],
-  build: {
-    outDir: '../docs',
-    emptyOutDir: true,
-  },
-});
+  build:
+    mode === 'artifact'
+      ? {
+          outDir: 'dist-artifact',
+          emptyOutDir: true,
+          cssCodeSplit: false,
+          assetsInlineLimit: 100_000_000,
+          modulePreload: false,
+        }
+      : {
+          outDir: '../docs',
+          emptyOutDir: true,
+        },
+}));

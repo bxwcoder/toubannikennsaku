@@ -21,13 +21,15 @@ export function SettingsScreen({ items, today, onImport, onMessage }: Props) {
   const [importError, setImportError] = useState<string | null>(null);
   const [showAbout, setShowAbout] = useState(false);
 
-  const handleExport = () => {
+  const handleExport = async () => {
     if (items.length === 0) {
       onMessage('書き出す項目がありません');
       return;
     }
-    exportItems(items, today);
-    onMessage('バックアップファイルを保存しました');
+    const result = await exportItems(items, today);
+    if (result === 'saved') onMessage('バックアップファイルを保存しました');
+    else if (result === 'declined') onMessage('保存を取りやめました');
+    else onMessage('この画面ではファイルを保存できませんでした');
   };
 
   const handleFile = async (e: ChangeEvent<HTMLInputElement>) => {
