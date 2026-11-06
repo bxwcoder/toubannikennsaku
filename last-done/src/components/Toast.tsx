@@ -12,7 +12,7 @@ interface Props {
   toast: ToastData | null;
   onClose: () => void;
   /** 下にボタンがある画面では、ボタンに重ならないよう上にずらす */
-  offset: 'none' | 'nav' | 'add';
+  offset: 'none' | 'fab';
 }
 
 export function Toast({ toast, onClose, offset }: Props) {

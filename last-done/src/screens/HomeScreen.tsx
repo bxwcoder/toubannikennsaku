@@ -1,11 +1,11 @@
 // ① ホーム画面
-import { useMemo } from 'react';
-import { type Item, type SortKey, SORT_LABELS } from '../types';
-import { sortItems } from '../lib/status';
+import { useEffect, useRef, useState } from 'react';
+import { type Item, type SortKey, type Status, SORT_LABELS } from '../types';
+import { getItemInfo, sortItems } from '../lib/status';
 import { navigate } from '../lib/router';
 import { Header } from '../components/Header';
-import { ItemCard } from '../components/ItemCard';
-import { IconCalendar, IconPlus } from '../components/Icons';
+import { ItemRow } from '../components/ItemRow';
+import { IconCalendar, IconClose, IconPlus, IconSettings } from '../components/Icons';
 
 interface Props {
   items: Item[];
@@ -16,31 +16,78 @@ interface Props {
   onLoadSample: () => void;
 }
 
+const HINT_KEY = 'last-done:hint-closed:v1';
+
+function readHintClosed(): boolean {
+  try {
+    return localStorage.getItem(HINT_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+const SUMMARY: { status: Status; label: string }[] = [
+  { status: 'over', label: '目安を過ぎた' },
+  { status: 'soon', label: 'もうすぐ' },
+  { status: 'ok', label: '余裕あり' },
+];
+
 export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday, onLoadSample }: Props) {
-  const sorted = useMemo(() => sortItems(items, sortKey, today), [items, sortKey, today]);
+  const [flashId, setFlashId] = useState<string | null>(null);
+  const [hintClosed, setHintClosed] = useState(readHintClosed);
+
+  // 並び順は、画面を開いたときと並べ替えを変えたときだけ決め直す。
+  // 「やった」を押した直後に行が別の場所へ飛んでいかないようにするため
+  const orderRef = useRef<{ key: SortKey; ids: string[] } | null>(null);
+  if (!orderRef.current || orderRef.current.key !== sortKey) {
+    orderRef.current = { key: sortKey, ids: sortItems(items, sortKey, today).map((it) => it.id) };
+  }
+  const byId = new Map(items.map((it) => [it.id, it]));
+  const ordered = orderRef.current.ids.map((id) => byId.get(id)).filter((it): it is Item => !!it);
+  for (const it of items) if (!orderRef.current.ids.includes(it.id)) ordered.push(it);
+
+  useEffect(() => {
+    if (!flashId) return;
+    const timer = setTimeout(() => setFlashId(null), 1200);
+    return () => clearTimeout(timer);
+  }, [flashId]);
+
+  const settingsButton = (
+    <button type="button" className="header-icon-btn" onClick={() => navigate({ name: 'settings' })}>
+      <IconSettings />
+      <span>設定</span>
+    </button>
+  );
 
   if (items.length === 0) {
     return (
       <>
-        <Header title="最後にやった日" />
+        <Header title="最後にやった日" right={settingsButton} />
         <main className="screen">
           <div className="empty">
             <div className="empty-icon">
               <IconCalendar width={40} height={40} />
             </div>
-            <h2 className="empty-title">まだ項目がありません</h2>
-            <p className="empty-text">
-              排水口の掃除やシーツの交換など、
-              <br />
-              「前にいつやったっけ？」となることを登録しましょう。
-              <br />
-              よく使う項目から選ぶこともできます。
-            </p>
-            <button type="button" className="btn btn--primary btn--large" onClick={() => navigate({ name: 'new' })}>
+            <h2 className="empty-title">「前にいつやったっけ？」を記録しよう</h2>
+            <ol className="empty-steps">
+              <li>
+                <span className="step-num">1</span>
+                <span>排水口の掃除やシーツの交換など、忘れがちなことを登録</span>
+              </li>
+              <li>
+                <span className="step-num">2</span>
+                <span>やった日に「やった」ボタンを押すだけ</span>
+              </li>
+              <li>
+                <span className="step-num">3</span>
+                <span>何日たったか、そろそろやる時期かがひと目で分かる</span>
+              </li>
+            </ol>
+            <button type="button" className="btn btn--primary btn--large btn--block" onClick={() => navigate({ name: 'new' })}>
               <IconPlus />
               <span>最初の項目を登録する</span>
             </button>
-            <button type="button" className="btn btn--secondary empty-sample" onClick={onLoadSample}>
+            <button type="button" className="btn btn--secondary btn--block" onClick={onLoadSample}>
               お試し用の見本を入れてみる
             </button>
             <p className="empty-note">見本はあとから1つずつ削除できます。</p>
@@ -50,47 +97,81 @@ export function HomeScreen({ items, today, sortKey, onSortChange, onDoneToday, o
     );
   }
 
+  const counts = { over: 0, soon: 0, ok: 0, none: 0 } as Record<Status, number>;
+  for (const it of items) counts[getItemInfo(it, today).status]++;
+
   return (
     <>
-      <Header title="最後にやった日" />
-      <main className="screen screen--with-add">
-        <div className="toolbar">
-          <label className="sort">
-            <span className="sort-label">並べ替え</span>
-            <select
-              className="sort-select"
-              value={sortKey}
-              onChange={(e) => onSortChange(e.target.value as SortKey)}
-            >
-              {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
-                <option key={key} value={key}>
-                  {SORT_LABELS[key]}
-                </option>
-              ))}
-            </select>
-          </label>
-          <span className="count">{items.length}件</span>
+      <Header title="最後にやった日" right={settingsButton} />
+      <main className="screen screen--with-fab">
+        <div className="summary" aria-label="状態のまとめ">
+          {SUMMARY.map(({ status, label }) => (
+            <span key={status} className={`summary-chip summary-chip--${status}`}>
+              {label}
+              <strong>{counts[status]}</strong>
+            </span>
+          ))}
         </div>
 
-        <ul className="card-list">
-          {sorted.map((item) => (
-            <ItemCard
+        {!hintClosed ? (
+          <div className="hint">
+            <p>
+              やったら右の<strong>「やった」</strong>を押すだけ。
+              <br />
+              項目の名前を押すと、くわしい情報や編集・削除ができます。
+            </p>
+            <button
+              type="button"
+              className="hint-close"
+              aria-label="使い方の説明を閉じる"
+              onClick={() => {
+                setHintClosed(true);
+                try {
+                  localStorage.setItem(HINT_KEY, '1');
+                } catch {
+                  // 記憶できなくても困らない
+                }
+              }}
+            >
+              <IconClose />
+            </button>
+          </div>
+        ) : null}
+
+        <div className="toolbar">
+          <label htmlFor="sort" className="sort-label">
+            並べ替え
+          </label>
+          <select id="sort" className="sort-select" value={sortKey} onChange={(e) => onSortChange(e.target.value as SortKey)}>
+            {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+              <option key={key} value={key}>
+                {SORT_LABELS[key]}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <ul className="row-list">
+          {ordered.map((item) => (
+            <ItemRow
               key={item.id}
               item={item}
               today={today}
+              flash={flashId === item.id}
               onOpen={() => navigate({ name: 'detail', id: item.id })}
-              onDoneToday={() => onDoneToday(item.id)}
+              onDoneToday={() => {
+                setFlashId(item.id);
+                onDoneToday(item.id);
+              }}
             />
           ))}
         </ul>
       </main>
 
-      <div className="add-bar">
-        <button type="button" className="btn btn--primary btn--large btn--block" onClick={() => navigate({ name: 'new' })}>
-          <IconPlus />
-          <span>項目を追加</span>
-        </button>
-      </div>
+      <button type="button" className="fab" onClick={() => navigate({ name: 'new' })}>
+        <IconPlus />
+        <span>追加</span>
+      </button>
     </>
   );
 }

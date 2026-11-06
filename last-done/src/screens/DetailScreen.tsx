@@ -1,13 +1,13 @@
 // ③ 項目詳細画面
 import { useState } from 'react';
 import type { Item } from '../types';
-import { elapsedLabel, formatLong } from '../lib/date';
-import { getItemInfo } from '../lib/status';
+import { elapsedLabel, formatLong, formatShort } from '../lib/date';
+import { getItemInfo, type ItemInfo } from '../lib/status';
 import { navigate } from '../lib/router';
 import { Header } from '../components/Header';
 import { StatusBadge } from '../components/StatusBadge';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { IconCheck } from '../components/Icons';
+import { IconCheck, IconPencil } from '../components/Icons';
 
 interface Props {
   item: Item;
@@ -17,6 +17,15 @@ interface Props {
   onDelete: () => void;
 }
 
+/** 状態を文章で説明する */
+function statusSentence(info: ItemInfo, today: string): string {
+  if (info.remaining == null || !info.nextDate) return '目安は決めていません。何日たったかだけを記録しています。';
+  const next = formatShort(info.nextDate, today);
+  if (info.remaining < 0) return `目安の ${next} を${-info.remaining}日過ぎています。そろそろやりましょう。`;
+  if (info.remaining === 0) return `今日（${next}）が目安の日です。`;
+  return `次の目安は ${next}。あと${info.remaining}日です。`;
+}
+
 export function DetailScreen({ item, today, onBack, onDoneToday, onDelete }: Props) {
   const [confirm, setConfirm] = useState<'done' | 'delete' | null>(null);
   const info = getItemInfo(item, today);
@@ -24,24 +33,28 @@ export function DetailScreen({ item, today, onBack, onDoneToday, onDelete }: Pro
 
   return (
     <>
-      <Header title="項目の詳細" onBack={onBack} />
+      <Header title="くわしく見る" onBack={onBack} />
       <main className="screen">
-        <section className={`detail-card card--${info.status}`}>
+        <section className={`detail-card detail-card--${info.status}`}>
           <div className="detail-head">
             <h2 className="detail-name">{item.name}</h2>
             <span className="detail-category">{item.category}</span>
           </div>
-          <StatusBadge status={info.status} label={info.statusLabel} />
-          <p className="detail-elapsed">
-            {info.elapsed === 0 ? (
-              <span className="elapsed-num">今日</span>
-            ) : (
-              <>
-                <span className="elapsed-num">{info.elapsed}</span>
-                <span className="elapsed-unit">日前</span>
-              </>
-            )}
-          </p>
+
+          <div className="detail-main">
+            <p className="detail-elapsed">
+              {info.elapsed === 0 ? (
+                <span className="elapsed-num">今日</span>
+              ) : (
+                <>
+                  <span className="elapsed-num">{info.elapsed}</span>
+                  <span className="elapsed-unit">日前</span>
+                </>
+              )}
+            </p>
+            <StatusBadge status={info.status} label={info.statusLabel} />
+          </div>
+          <p className="detail-sentence">{statusSentence(info, today)}</p>
 
           <dl className="detail-list">
             <div>
@@ -63,29 +76,27 @@ export function DetailScreen({ item, today, onBack, onDoneToday, onDelete }: Pro
           </dl>
         </section>
 
-        <div className="detail-actions">
+        <button
+          type="button"
+          className="btn btn--primary btn--huge btn--block"
+          onClick={() => setConfirm('done')}
+          disabled={doneToday}
+        >
+          <IconCheck width={28} height={28} strokeWidth={3} />
+          <span>{doneToday ? '今日はもう記録しました' : '今日やった'}</span>
+        </button>
+
+        <div className="detail-sub-actions">
           <button
             type="button"
-            className="btn btn--primary btn--large btn--block"
-            onClick={() => setConfirm('done')}
-            disabled={doneToday}
-          >
-            <IconCheck />
-            <span>{doneToday ? '今日記録済み' : '今日やった'}</span>
-          </button>
-          <button
-            type="button"
-            className="btn btn--secondary btn--large btn--block"
+            className="btn btn--secondary btn--block"
             onClick={() => navigate({ name: 'edit', id: item.id })}
           >
-            項目を編集
+            <IconPencil />
+            <span>編集</span>
           </button>
-          <button
-            type="button"
-            className="btn btn--danger-outline btn--large btn--block"
-            onClick={() => setConfirm('delete')}
-          >
-            項目を削除
+          <button type="button" className="btn btn--danger-outline btn--block" onClick={() => setConfirm('delete')}>
+            削除
           </button>
         </div>
       </main>
@@ -93,8 +104,8 @@ export function DetailScreen({ item, today, onBack, onDoneToday, onDelete }: Pro
       {confirm === 'done' ? (
         <ConfirmDialog
           title="今日やったことにしますか？"
-          message={`「${item.name}」の最後にやった日を、今日（${formatLong(today)}）に更新します。前回は${formatLong(item.lastDate)}（${elapsedLabel(info.elapsed)}）です。`}
-          confirmLabel="更新する"
+          message={`「${item.name}」の最後にやった日を、今日（${formatLong(today)}）に変えます。前回は${formatLong(item.lastDate)}（${elapsedLabel(info.elapsed)}）でした。`}
+          confirmLabel="記録する"
           onCancel={() => setConfirm(null)}
           onConfirm={() => {
             setConfirm(null);

@@ -9,7 +9,6 @@ import { HomeScreen } from './screens/HomeScreen';
 import { ItemFormScreen, type ItemFormValues } from './screens/ItemFormScreen';
 import { DetailScreen } from './screens/DetailScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
-import { BottomNav } from './components/BottomNav';
 import { Toast, type ToastData } from './components/Toast';
 
 /** 日付が変わったら（夜中の0時をまたいだら）「今日」を更新する */
@@ -63,7 +62,7 @@ export default function App() {
     if (!target) return;
     const previous = target.lastDate;
     setLastDate(id, today);
-    showToast(`「${target.name}」を今日に更新しました`, '元に戻す', () => setLastDate(id, previous));
+    showToast(`「${target.name}」を記録しました（今日）`, '元に戻す', () => setLastDate(id, previous));
   };
 
   const addItem = (values: ItemFormValues) => {
@@ -108,11 +107,9 @@ export default function App() {
 
   // 表示する画面を決める
   let screen: ReactElement | null;
-  let nav: 'home' | 'settings' | null = null;
 
   switch (route.name) {
     case 'home':
-      nav = 'home';
       screen = (
         <HomeScreen
           items={items}
@@ -125,8 +122,15 @@ export default function App() {
       );
       break;
     case 'settings':
-      nav = 'settings';
-      screen = <SettingsScreen items={items} today={today} onImport={importItems} onMessage={showToast} />;
+      screen = (
+        <SettingsScreen
+          items={items}
+          today={today}
+          onImport={importItems}
+          onMessage={showToast}
+          onBack={() => goBack({ name: 'home' })}
+        />
+      );
       break;
     case 'new':
       screen = <ItemFormScreen today={today} onSubmit={addItem} onBack={() => goBack({ name: 'home' })} />;
@@ -147,7 +151,7 @@ export default function App() {
             onBack={() => goBack({ name: 'home' })}
             onDoneToday={() => {
               setLastDate(item.id, today);
-              showToast(`「${item.name}」を今日に更新しました`);
+              showToast(`「${item.name}」を記録しました（今日）`);
             }}
             onDelete={() => deleteItem(item.id)}
           />
@@ -167,12 +171,7 @@ export default function App() {
   return (
     <div className="app">
       {screen}
-      {nav ? <BottomNav current={nav} /> : null}
-      <Toast
-        toast={toast}
-        onClose={closeToast}
-        offset={nav === 'home' && items.length > 0 ? 'add' : nav ? 'nav' : 'none'}
-      />
+      <Toast toast={toast} onClose={closeToast} offset={route.name === 'home' && items.length > 0 ? 'fab' : 'none'} />
     </div>
   );
 }

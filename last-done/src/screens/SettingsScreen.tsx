@@ -11,11 +11,12 @@ interface Props {
   today: string;
   onImport: (items: Item[]) => void;
   onMessage: (message: string) => void;
+  onBack: () => void;
 }
 
 export const APP_VERSION = '0.1.0（画面見本）';
 
-export function SettingsScreen({ items, today, onImport, onMessage }: Props) {
+export function SettingsScreen({ items, today, onImport, onMessage, onBack }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [pending, setPending] = useState<Item[] | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
@@ -47,8 +48,8 @@ export function SettingsScreen({ items, today, onImport, onMessage }: Props) {
 
   return (
     <>
-      <Header title="設定" />
-      <main className="screen screen--with-nav">
+      <Header title="設定" onBack={onBack} />
+      <main className="screen">
         <h2 className="section-title section-title--list">バックアップ</h2>
         <ul className="menu">
           <li>

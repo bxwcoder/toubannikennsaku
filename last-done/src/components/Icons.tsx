@@ -84,3 +84,16 @@ export const IconCalendar = (p: SVGProps<SVGSVGElement>) => (
     <path d="M3.5 10h17M8 3v4M16 3v4" />
   </Svg>
 );
+
+export const IconClose = (p: SVGProps<SVGSVGElement>) => (
+  <Svg {...p}>
+    <path d="M18 6 6 18M6 6l12 12" />
+  </Svg>
+);
+
+export const IconPencil = (p: SVGProps<SVGSVGElement>) => (
+  <Svg {...p}>
+    <path d="M4 20h4L19 9l-4-4L4 16v4Z" />
+    <path d="m13.5 6.5 4 4" />
+  </Svg>
+);
