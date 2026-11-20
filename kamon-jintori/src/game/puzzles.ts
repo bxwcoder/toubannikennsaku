@@ -1,22 +1,37 @@
-// 検証済みの問題データ（STEP 2 用の少数の問題）
-// regions: 左上から行ごとにエリアを A〜F の文字で表したもの
-// solution: 各行の家紋の列番号（0始まり）
-// すべての問題は puzzles.test.ts で「解答がちょうど1通り」であることを確認している
+// 問題集の読み込み
+// 問題データは tools/generate.ts で自動生成し、src/game/data/ に保存している。
+// すべての問題は puzzles.test.ts で「解答がちょうど1通り・推理だけで解ける」ことを確認している。
 import type { Puzzle } from './types';
+import data6 from './data/puzzles-6x6.json';
 
-const RAW: { regions: string; solution: string; technique: number }[] = [
-  { regions: 'BBBBACBDCBBCDDCCCCDDCCEEDFCCEEDFFFEE', solution: '403152', technique: 1 },
-  { regions: 'DAACCCDAEBCCDEEEECDEEEEEEEEFFEEEFFFE', solution: '135024', technique: 1 },
-  { regions: 'BAAACCBBBAACDCCCCCDCCCCECCFFCECFFFFF', solution: '314052', technique: 2 },
-  { regions: 'EEBBBAEBBBCAEEECCAEDDFCCEEEFFCFFFFFF', solution: '514203', technique: 2 },
-  { regions: 'AAABBBDDAABBDDDCCCDEEECCDEEECCDDEEFF', solution: '153024', technique: 3 },
-  { regions: 'BBAAACBAACCCCCACDCECCCDDEECCFDEEECFF', solution: '203514', technique: 3 },
-];
+/** 問題集ファイルに保存されている1問の形 */
+export interface PuzzleRecord {
+  /** 生成に使った種番号（同じ番号で同じ問題を作り直せる） */
+  seed: number;
+  /** 各マスのエリアを A, B, C... の文字で並べたもの（左上から行ごと） */
+  regions: string;
+  /** 各行の家紋の列番号（0始まり）をカンマ区切りで */
+  solution: string;
+  /** 必要な推理の段階（★の数） */
+  technique: number;
+  /** 難しさの点数 */
+  score?: number;
+}
 
-export const PUZZLES: Puzzle[] = RAW.map((r, idx) => ({
-  id: idx + 1,
-  size: Math.round(Math.sqrt(r.regions.length)),
-  regions: [...r.regions].map((ch) => ch.charCodeAt(0) - 65),
-  solution: [...r.solution].map(Number),
-  technique: r.technique,
-}));
+function toPuzzles(records: PuzzleRecord[]): Puzzle[] {
+  return records.map((r, idx) => ({
+    id: idx + 1,
+    size: Math.round(Math.sqrt(r.regions.length)),
+    regions: [...r.regions].map((ch) => ch.charCodeAt(0) - 65),
+    solution: r.solution.split(',').map(Number),
+    technique: r.technique,
+  }));
+}
+
+/** 難易度ごとの問題集（中級8×8・上級10×10は後で追加） */
+export const PUZZLE_SETS = {
+  beginner: { label: '初級', size: 6, puzzles: toPuzzles(data6) },
+} as const;
+
+/** 今遊べる問題（初級） */
+export const PUZZLES: Puzzle[] = PUZZLE_SETS.beginner.puzzles;

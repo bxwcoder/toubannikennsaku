@@ -33,6 +33,33 @@ export function countSolutions(size: number, regions: number[], limit = 2): numb
   return count;
 }
 
+/** 解答を最大2つまで見つけて返す（問題作りの調整で使う） */
+export function findTwoSolutions(size: number, regions: number[]): number[][] {
+  const colUsed = new Array<boolean>(size).fill(false);
+  const regionUsed = new Array<boolean>(size).fill(false);
+  const cols: number[] = [];
+  const found: number[][] = [];
+  const search = (row: number): boolean => {
+    if (row === size) {
+      found.push([...cols]);
+      return found.length >= 2;
+    }
+    for (let col = 0; col < size; col++) {
+      if (colUsed[col]) continue;
+      if (row > 0 && Math.abs(cols[row - 1] - col) === 1) continue;
+      const region = regions[row * size + col];
+      if (regionUsed[region]) continue;
+      colUsed[col] = regionUsed[region] = true;
+      cols[row] = col;
+      if (search(row + 1)) return true;
+      colUsed[col] = regionUsed[region] = false;
+    }
+    return false;
+  };
+  search(0);
+  return found;
+}
+
 /** 解答を1つ見つけて返す（なければ null） */
 export function findSolution(size: number, regions: number[]): number[] | null {
   const colUsed = new Array<boolean>(size).fill(false);

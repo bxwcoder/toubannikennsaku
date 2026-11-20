@@ -1,0 +1,212 @@
+[
+ {
+  "seed": 6,
+  "regions": "BBEEEEBEEEEFBBBECCDBBECCDBBAACDDDAAA",
+  "solution": "2,5,1,4,0,3",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 7,
+  "regions": "AAAFFFAADFEEAADFEFAAAFFFAAABCFABBBFF",
+  "solution": "3,5,2,0,4,1",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 32,
+  "regions": "AAADDDAAAADDAAABDDFAAADDFFFEECFEEEEE",
+  "solution": "4,1,3,0,5,2",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 38,
+  "regions": "EEAAAAEEDAACEEDACCDDDDDCFDDDDCFFDDDB",
+  "solution": "3,1,4,2,0,5",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 44,
+  "regions": "DDDDDDDCCFFFDDCCEFDACCEFDACCEFDDBCEE",
+  "solution": "0,5,3,1,4,2",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 49,
+  "regions": "DDDFBBDDDDBBDBBBBEDACBEEDCCEEEDCCEEE",
+  "solution": "3,0,4,1,5,2",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 60,
+  "regions": "FFFCCCFCCCCDFABCCDFBBEDDBBEEEDEEEEEE",
+  "solution": "2,4,1,5,0,3",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 74,
+  "regions": "ACCCCCAAABCCEAABDCEEFDDCEEDDDCEEDDCC",
+  "solution": "0,3,5,2,4,1",
+  "technique": 1,
+  "score": 6
+ },
+ {
+  "seed": 12,
+  "regions": "AEEFFFAEEEFDAEEEBBACBBBBCCBBBBCCCBBB",
+  "solution": "3,5,2,0,4,1",
+  "technique": 2,
+  "score": 9
+ },
+ {
+  "seed": 13,
+  "regions": "CEEAAACCCAAACCCAAADCCCCCDCCBBBDDDFBB",
+  "solution": "1,4,2,0,5,3",
+  "technique": 2,
+  "score": 9
+ },
+ {
+  "seed": 1,
+  "regions": "DDEEEEDDACEEBDCCEEBDCCEEBBCCCCFFFFFF",
+  "solution": "0,2,5,3,1,4",
+  "technique": 2,
+  "score": 15
+ },
+ {
+  "seed": 2,
+  "regions": "FFFFFDBBFDDDCCFDDDCCCCDDCCCEEECCCEEA",
+  "solution": "2,0,4,1,3,5",
+  "technique": 2,
+  "score": 15
+ },
+ {
+  "seed": 4,
+  "regions": "FDDDDAFFDDEEFFCDDEFCCDEEFCDDDEBBBBBE",
+  "solution": "5,2,0,4,1,3",
+  "technique": 2,
+  "score": 15
+ },
+ {
+  "seed": 18,
+  "regions": "CEEEEFBEEDEFBBDDFFBBDDDABBDAAABBAAAA",
+  "solution": "0,2,5,3,1,4",
+  "technique": 2,
+  "score": 15
+ },
+ {
+  "seed": 16,
+  "regions": "AABCCFBBBDCFBBBDCFBBBDCFDDDDDFDEDDFF",
+  "solution": "0,4,2,5,3,1",
+  "technique": 2,
+  "score": 21
+ },
+ {
+  "seed": 15,
+  "regions": "EEDDBBEDDBBBEDBBBAEEEEAACEEFAAEEEFFA",
+  "solution": "4,1,5,2,0,3",
+  "technique": 2,
+  "score": 30
+ },
+ {
+  "seed": 11,
+  "regions": "FFFFFFFBBBBAFFDDAAFDDDAEDDDEEEDCDEEE",
+  "solution": "0,3,5,2,4,1",
+  "technique": 2,
+  "score": 33
+ },
+ {
+  "seed": 5,
+  "regions": "AAAAAADAAAAFDCCAAFDCAABBCCAEEBCAAEEE",
+  "solution": "2,5,0,4,1,3",
+  "technique": 2,
+  "score": 36
+ },
+ {
+  "seed": 3,
+  "regions": "DAAAFFAAAAFFAAAAFFEEAAFFEEBBCFEEEBCC",
+  "solution": "0,2,4,1,3,5",
+  "technique": 2,
+  "score": 39
+ },
+ {
+  "seed": 9,
+  "regions": "CCFFAACEFFABEEEFFBEEEEBBDDDBBDDDDDDD",
+  "solution": "5,0,3,1,4,2",
+  "technique": 2,
+  "score": 60
+ },
+ {
+  "seed": 8,
+  "regions": "FFFAABFFFFBBFFFFDBFCCCDDFCCDDDCCEEDD",
+  "solution": "3,0,5,1,4,2",
+  "technique": 2,
+  "score": 66
+ },
+ {
+  "seed": 10,
+  "regions": "BBAFFFBBAAACAAAAACAAAAACAAAECCDDEEEE",
+  "solution": "4,0,2,5,3,1",
+  "technique": 2,
+  "score": 75
+ },
+ {
+  "seed": 42,
+  "regions": "EEEACCEEAADCBAAADDBBBDDDFFDDDDFDDDDD",
+  "solution": "2,5,3,1,4,0",
+  "technique": 3,
+  "score": 34
+ },
+ {
+  "seed": 54,
+  "regions": "BCCCCFCCCCFFCCCCFFDCCAFFDDDAEEDDAAEE",
+  "solution": "0,2,5,3,1,4",
+  "technique": 3,
+  "score": 37
+ },
+ {
+  "seed": 125,
+  "regions": "DDDEEEDDDECCDBAEECBBACCCBBBCCFBBCCCF",
+  "solution": "3,0,2,4,1,5",
+  "technique": 3,
+  "score": 61
+ },
+ {
+  "seed": 89,
+  "regions": "DDDDBBDDFABBCDFAAACCAAAACCAAAACCAAEE",
+  "solution": "1,4,2,0,3,5",
+  "technique": 3,
+  "score": 65
+ },
+ {
+  "seed": 94,
+  "regions": "DBBBFFDABBFBAABBBBAAACBBAAACBECCCCEE",
+  "solution": "4,0,3,1,5,2",
+  "technique": 3,
+  "score": 67
+ },
+ {
+  "seed": 14,
+  "regions": "FFCCCCDFBBBCDDDEBEDDDEBEDADEEEAADDDE",
+  "solution": "3,1,4,2,5,0",
+  "technique": 3,
+  "score": 70
+ },
+ {
+  "seed": 85,
+  "regions": "FBBDDDFFBBBDFFFBDDBBBBAABBCEAACCCEEA",
+  "solution": "4,2,0,5,3,1",
+  "technique": 3,
+  "score": 79
+ },
+ {
+  "seed": 56,
+  "regions": "AAAFFDEEAFFDEEEDDDECEEBBECCCCBCCCBBB",
+  "solution": "1,3,5,0,2,4",
+  "technique": 3,
+  "score": 86
+ }
+]
