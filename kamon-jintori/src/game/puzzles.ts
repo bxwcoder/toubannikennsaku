@@ -21,6 +21,7 @@ export interface PuzzleRecord {
 function toPuzzles(records: PuzzleRecord[]): Puzzle[] {
   return records.map((r, idx) => ({
     id: idx + 1,
+    key: `${Math.round(Math.sqrt(r.regions.length))}-${r.seed}`,
     size: Math.round(Math.sqrt(r.regions.length)),
     regions: [...r.regions].map((ch) => ch.charCodeAt(0) - 65),
     solution: r.solution.split(',').map(Number),

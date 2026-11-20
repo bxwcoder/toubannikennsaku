@@ -22,9 +22,13 @@ interface Props {
   violations: Set<number>;
   cleared: boolean;
   onTap: (index: number) => void;
+  /** ヒントで光らせるマス */
+  hintCells?: number[];
+  /** ヒントの種類（間違いの指摘なら赤く光らせる） */
+  hintKind?: 'wrong' | 'place' | 'eliminate';
 }
 
-export function Board({ puzzle, cells, violations, cleared, onTap }: Props) {
+export function Board({ puzzle, cells, violations, cleared, onTap, hintCells = [], hintKind }: Props) {
   const n = puzzle.size;
   const reg = puzzle.regions;
   const THICK = '1.5px solid #3b2f2a';
@@ -43,10 +47,11 @@ export function Board({ puzzle, cells, violations, cleared, onTap }: Props) {
         // 隣のマスと別のエリアなら太線、同じエリアなら細線
         const border = (other: number | null) => (other === null || reg[other] !== reg[i] ? THICK : THIN);
         const bad = violations.has(i);
+        const hint = hintCells.includes(i) ? (hintKind === 'wrong' ? 'cell-hint-wrong' : 'cell-hint') : '';
         return (
           <button
             key={i}
-            className={`cell ${bad ? 'cell-bad' : ''}`}
+            className={`cell ${bad ? 'cell-bad' : ''} ${hint}`}
             style={{
               background: REGION_COLORS[reg[i] % REGION_COLORS.length],
               borderTop: border(r > 0 ? i - n : null),

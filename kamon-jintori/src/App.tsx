@@ -1,108 +1,118 @@
-// ゲーム画面（STEP 2 の試作品）
-import { useMemo, useState } from 'react';
-import { Board } from './components/Board';
+// アプリ全体: どの画面を表示するかを切り替える
+import { useEffect, useState } from 'react';
 import { PUZZLES } from './game/puzzles';
-import { findViolations, isCleared, nextState } from './game/rules';
-import type { CellState } from './game/types';
+import { ClearScreen } from './screens/ClearScreen';
+import { GameScreen } from './screens/GameScreen';
+import { HowToScreen } from './screens/HowToScreen';
+import { PuzzleListScreen } from './screens/PuzzleListScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
+import { TitleScreen } from './screens/TitleScreen';
+import { ads } from './services/ads';
+import { loadData, recordClear, resetAllData, saveData, type SaveData } from './services/storage';
+import { setSoundEnabled } from './services/sound';
 
-const emptyCells = (size: number): CellState[] => new Array(size * size).fill('empty');
+type Screen =
+  | { name: 'title' }
+  | { name: 'list' }
+  | { name: 'game'; index: number; round: number }
+  | { name: 'howto' }
+  | { name: 'settings' };
+
+interface ClearInfo {
+  time: number;
+  hintsUsed: number;
+  isNewBest: boolean;
+  previousBest: number | null;
+}
 
 export default function App() {
-  const [puzzleIndex, setPuzzleIndex] = useState(0);
-  const puzzle = PUZZLES[puzzleIndex];
-  const [cells, setCells] = useState<CellState[]>(() => emptyCells(puzzle.size));
-  // 「1手戻す」ために、これまでの盤面を順番に記録しておく
-  const [history, setHistory] = useState<CellState[][]>([]);
+  const [data, setDataState] = useState<SaveData>(loadData);
+  const [screen, setScreen] = useState<Screen>({ name: 'title' });
+  const [clearInfo, setClearInfo] = useState<ClearInfo | null>(null);
 
-  const violations = useMemo(() => findViolations(cells, puzzle), [cells, puzzle]);
-  const cleared = useMemo(() => isCleared(cells, puzzle), [cells, puzzle]);
-  const kamonCount = cells.filter((s) => s === 'kamon').length;
-
-  const handleTap = (i: number) => {
-    if (cleared) return;
-    setHistory((h) => [...h, cells]);
-    setCells(cells.map((s, j) => (j === i ? nextState(s) : s)));
+  const setData = (d: SaveData) => {
+    setDataState(d);
+    saveData(d);
   };
 
-  const handleUndo = () => {
-    if (history.length === 0) return;
-    setCells(history[history.length - 1]);
-    setHistory(history.slice(0, -1));
+  useEffect(() => setSoundEnabled(data.settings.sound), [data.settings.sound]);
+
+  const clearedCount = PUZZLES.filter((p) => data.results[p.key!]).length;
+  // まだクリアしていない最初の問題（全部クリア済みなら最後の問題）
+  const firstUncleared = Math.max(0, PUZZLES.findIndex((p) => !data.results[p.key!]));
+  const startIndex = clearedCount === PUZZLES.length ? PUZZLES.length - 1 : firstUncleared;
+
+  const openGame = (index: number) => {
+    setClearInfo(null);
+    setScreen((s) => ({ name: 'game', index, round: s.name === 'game' ? s.round + 1 : 0 }));
   };
 
-  const handleReset = () => {
-    if (kamonCount === 0 && !cells.includes('mark')) return;
-    setHistory((h) => [...h, cells]);
-    setCells(emptyCells(puzzle.size));
-  };
-
-  const goTo = (index: number) => {
-    const p = PUZZLES[index];
-    setPuzzleIndex(index);
-    setCells(emptyCells(p.size));
-    setHistory([]);
-  };
-
-  return (
-    <div className="app">
-      <header className="header">
-        <h1 className="title">家紋陣取り</h1>
-        <p className="subtitle">
-          第{puzzle.id}問　<span className="level">初級 {'★'.repeat(puzzle.technique)}</span>
-        </p>
-      </header>
-
-      <main className="main">
-        <p className={`status ${violations.size ? 'status-bad' : ''}`}>
-          {cleared
-            ? '見事、陣取り完了！'
-            : violations.size
-              ? '赤い家紋がルールに違反しています'
-              : `家紋 ${kamonCount} / ${puzzle.size}`}
-        </p>
-
-        <Board puzzle={puzzle} cells={cells} violations={violations} cleared={cleared} onTap={handleTap} />
-
-        {cleared ? (
-          <div className="clear-box">
-            {puzzleIndex < PUZZLES.length - 1 ? (
-              <button className="btn btn-primary" onClick={() => goTo(puzzleIndex + 1)}>
-                次の問題へ
-              </button>
-            ) : (
-              <p>全問クリアしました！</p>
-            )}
-            <button className="btn" onClick={() => goTo(puzzleIndex)}>
-              もう一度
-            </button>
-          </div>
-        ) : (
-          <div className="controls">
-            <button className="btn" onClick={handleUndo} disabled={history.length === 0}>
-              1手戻す
-            </button>
-            <button className="btn" onClick={handleReset}>
-              リセット
-            </button>
-          </div>
-        )}
-
-        <p className="help">タップするたびに　空 → × → 家紋 → 空</p>
-
-        {/* 試作品用：問題を行き来するボタン（後でタイトル画面・問題選択に置き換える） */}
-        <nav className="dev-nav">
-          <button className="btn btn-small" onClick={() => goTo(puzzleIndex - 1)} disabled={puzzleIndex === 0}>
-            ◀ 前の問題
-          </button>
-          <button
-            className="btn btn-small"
-            onClick={() => goTo(puzzleIndex + 1)}
-            disabled={puzzleIndex === PUZZLES.length - 1}
-          >
-            次の問題 ▶
-          </button>
-        </nav>
-      </main>
-    </div>
-  );
+  switch (screen.name) {
+    case 'title':
+      return (
+        <TitleScreen
+          clearedCount={clearedCount}
+          totalCount={PUZZLES.length}
+          onStart={() => openGame(startIndex)}
+          onSelect={() => setScreen({ name: 'list' })}
+          onHowTo={() => setScreen({ name: 'howto' })}
+          onSettings={() => setScreen({ name: 'settings' })}
+        />
+      );
+    case 'list':
+      return (
+        <PuzzleListScreen
+          puzzles={PUZZLES}
+          results={data.results}
+          onPick={openGame}
+          onBack={() => setScreen({ name: 'title' })}
+        />
+      );
+    case 'howto':
+      return <HowToScreen onBack={() => setScreen({ name: 'title' })} />;
+    case 'settings':
+      return (
+        <SettingsScreen
+          settings={data.settings}
+          onChange={(settings) => setData({ ...data, settings })}
+          onResetData={() => setDataState(resetAllData())}
+          onBack={() => setScreen({ name: 'title' })}
+        />
+      );
+    case 'game': {
+      const puzzle = PUZZLES[screen.index];
+      const hasNext = screen.index < PUZZLES.length - 1;
+      return (
+        <>
+          <GameScreen
+            key={`${puzzle.key}-${screen.round}`}
+            puzzle={puzzle}
+            showTimer={data.settings.showTimer}
+            onBack={() => setScreen({ name: 'list' })}
+            onCleared={(time, hintsUsed) => {
+              const r = recordClear(data, puzzle.key!, time, hintsUsed);
+              setData(r.data);
+              setClearInfo({ time, hintsUsed, isNewBest: r.isNewBest, previousBest: r.previousBest });
+            }}
+          />
+          {clearInfo && (
+            <ClearScreen
+              puzzleId={puzzle.id}
+              {...clearInfo}
+              hasNext={hasNext}
+              onNext={async () => {
+                await ads.beforeNextPuzzle(data.totalClears); // 将来ここで数問ごとに広告
+                openGame(screen.index + 1);
+              }}
+              onRetry={() => openGame(screen.index)}
+              onList={() => {
+                setClearInfo(null);
+                setScreen({ name: 'list' });
+              }}
+            />
+          )}
+        </>
+      );
+    }
+  }
 }
