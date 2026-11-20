@@ -1,5 +1,7 @@
 // アプリ全体: どの画面を表示するかを切り替える
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { App as NativeApp } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 import { PUZZLES } from './game/puzzles';
 import { ClearScreen } from './screens/ClearScreen';
 import { GameScreen } from './screens/GameScreen';
@@ -36,6 +38,23 @@ export default function App() {
   };
 
   useEffect(() => setSoundEnabled(data.settings.sound), [data.settings.sound]);
+
+  // Androidの「戻る」ボタン: 1つ前の画面へ。タイトル画面ではアプリを閉じる
+  const backRef = useRef<() => void>(() => {});
+  backRef.current = () => {
+    if (screen.name === 'title') void NativeApp.exitApp();
+    else if (screen.name === 'game') {
+      setClearInfo(null);
+      setScreen({ name: 'list' });
+    } else setScreen({ name: 'title' });
+  };
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const handle = NativeApp.addListener('backButton', () => backRef.current());
+    return () => {
+      void handle.then((h) => h.remove());
+    };
+  }, []);
 
   const clearedCount = PUZZLES.filter((p) => data.results[p.key!]).length;
   // まだクリアしていない最初の問題（全部クリア済みなら最後の問題）

@@ -16,3 +16,9 @@
 ## 問題を作り直す・増やす
 `npm run generate -- 6` … 6×6の問題集（src/game/data/puzzles-6x6.json）を自動で作ります。
 解答が1通りで、推理だけで解ける問題だけが収録されます。数は tools/generate.ts の QUOTA で変えられます。
+
+## Androidアプリにする
+- `npm run android` … ゲームを組み立てて、Androidプロジェクト（android フォルダ）に反映します
+- `npm run android:open` … Android Studio で android フォルダを開きます
+- アイコン・起動画面の元画像は assets フォルダにあります。作り直すときは
+  `npx @capacitor/assets@3.0.5 generate --android --iconBackgroundColor '#f3ece0' --splashBackgroundColor '#f3ece0' --splashBackgroundColorDark '#f3ece0'`
