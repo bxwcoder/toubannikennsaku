@@ -1,0 +1,113 @@
+/* 和紙をイメージした落ち着いた配色 */
+:root {
+  --washi: #f3ece0;
+  --washi-dark: #e7dccb;
+  --sumi: #2e2622; /* 墨色 */
+  --sumi-soft: #6b5d55;
+  --shu: #c0392b; /* 朱色（違反の表示） */
+  --ai: #2c4a6b; /* 藍色（主要ボタン） */
+  --kin: #b8913a; /* 金茶（クリア演出） */
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background-color: var(--washi);
+  /* 和紙の繊維感を、細かい模様で控えめに表現 */
+  background-image:
+    radial-gradient(rgba(120, 100, 70, 0.05) 1px, transparent 1px),
+    radial-gradient(rgba(120, 100, 70, 0.04) 1px, transparent 1px);
+  background-size: 7px 7px, 11px 11px;
+  background-position: 0 0, 3px 5px;
+  color: var(--sumi);
+  font-family: 'Hiragino Mincho ProN', 'Yu Mincho', 'Noto Serif JP', serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font-family: inherit; }
+
+.app {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100dvh;
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+}
+
+.header { text-align: center; margin-bottom: 8px; }
+.title { margin: 0; font-size: 28px; letter-spacing: 0.25em; font-weight: 700; }
+.subtitle { margin: 4px 0 0; font-size: 16px; color: var(--sumi-soft); }
+.level { color: var(--kin); }
+
+.main { display: flex; flex-direction: column; align-items: center; gap: 14px; flex: 1; }
+
+.status { margin: 4px 0 0; font-size: 17px; min-height: 1.5em; }
+.status-bad { color: var(--shu); }
+
+/* 盤面: 画面幅いっぱい（最大480px）の正方形 */
+.board {
+  display: grid;
+  width: min(100%, 480px);
+  aspect-ratio: 1 / 1;
+  border: 2px solid var(--sumi);
+  background: var(--sumi);
+  box-shadow: 0 3px 10px rgba(60, 40, 20, 0.18);
+}
+
+.cell {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  color: var(--sumi);
+}
+.cell:disabled { cursor: default; }
+.cell:active:not(:disabled) { filter: brightness(0.93); }
+
+.kamon { width: 74%; height: 74%; display: block; animation: pop 0.18s ease-out; }
+.mark { font-size: clamp(16px, 6vw, 28px); color: var(--sumi-soft); line-height: 1; }
+
+.cell-bad { box-shadow: inset 0 0 0 3px rgba(192, 57, 43, 0.55); }
+
+@keyframes pop {
+  from { transform: scale(0.5); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* クリア時: 左上から順にマスがきらっと光る */
+.board-cleared .cell { animation: shine 0.7s ease-out both; }
+@keyframes shine {
+  0% { filter: brightness(1); }
+  40% { filter: brightness(1.18) sepia(0.35); }
+  100% { filter: brightness(1); }
+}
+
+.controls, .clear-box, .dev-nav { display: flex; gap: 12px; justify-content: center; width: 100%; }
+
+.btn {
+  min-height: 48px; /* 指で押しやすい大きさ */
+  min-width: 120px;
+  padding: 10px 18px;
+  font-size: 17px;
+  border-radius: 10px;
+  border: 1.5px solid var(--sumi);
+  background: #fbf7f0;
+  color: var(--sumi);
+  cursor: pointer;
+}
+.btn:active:not(:disabled) { transform: translateY(1px); background: var(--washi-dark); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.btn-primary { background: var(--ai); border-color: var(--ai); color: #fff; }
+.btn-primary:active:not(:disabled) { background: #22394f; }
+.btn-small { min-height: 40px; min-width: 0; font-size: 14px; }
+
+.help { margin: 0; font-size: 14px; color: var(--sumi-soft); }
+.dev-nav { margin-top: auto; padding-top: 8px; }
