@@ -18,7 +18,9 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled false
+            // 使っていないプログラムや画像を取り除いて、アプリを小さくする
+            minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
