@@ -8,7 +8,10 @@
   2. 払い出し：払い出し音の「出だし」のお手本と波形がそっくりな場所を探す
      ※ チェリーの払い出し音は、ブドウの払い出し音の出だしと同じ種類の音で、長さだけが違う
   3. 払い出し音が何秒続いたか（高い音域の音量で測る）で区別する
-       長い（初期値 0.55秒以上）→ ブドウ / 短い → チェリー
+       短い → チェリー / 0.55〜1.25秒 → ブドウ / それより長い → その他（ベル等）
+     ※ 払い出し音は約0.1秒ごとの音の連続で、枚数が多いほど長くなる（ブドウ約0.8〜1.0秒）。
+       ベル・ピエロは実録音がないため、1.25秒の上限は推定値。ピエロはブドウと
+       長さが近く、ブドウとして数えてしまう可能性がある。
 
 使い方:
   python3 count_all.py 録音.mp4 --reel 回転開始音.mp4 --payout 払い出し音の出だし.mp4
@@ -62,6 +65,8 @@ def main():
     p.add_argument("--reel-th", type=float, default=0.6)
     p.add_argument("--payout-th", type=float, default=0.55)
     p.add_argument("--grape-len", type=float, default=0.55, help="これ以上続けばブドウ（秒）")
+    p.add_argument("--max-grape-len", type=float, default=1.25,
+                   help="これより長い払い出しはブドウ以外（ベル等）とみなす（秒）。実測データなしの推定値")
     a = p.parse_args()
 
     x = load(a.audio)
@@ -75,8 +80,14 @@ def main():
     for k in pays:
         t = k / SR
         ln = payout_length(env, t)
-        kind = "ブドウ" if ln >= a.grape_len else "チェリー"
-        (grapes if kind == "ブドウ" else cherries).append(t)
+        if ln > a.max_grape_len:
+            kind = "その他（ベル・ピエロ等?）"
+        elif ln >= a.grape_len:
+            kind = "ブドウ"
+            grapes.append(t)
+        else:
+            kind = "チェリー"
+            cherries.append(t)
         print(f"  {t:7.2f}秒  そっくり度{s_pay[k]:.2f}  長さ{ln:.2f}秒 → {kind}")
 
     g = len(games)
