@@ -11,6 +11,8 @@
 |---|---|
 | `stage1/analyze.py` | 録音を解析して、回転開始・電子音のまとまりの候補を探すツール |
 | `stage1/make_synthetic.py` | 解析ツールの動作確認用に「作り物の音」を作る（本物の音ではない） |
+| `stage1/payout_fingerprint.py` | 払い出し音の「指紋」照合テスト（実録音で使用） |
+| `stage1/RESULTS.md` | 実験結果のまとめ |
 | `stage1/RECORDING_GUIDE.md` | 実機録音のお願い（録り方・メモの取り方） |
 
 ## 聞き分けの考え方（仮説・未検証）
